@@ -21,3 +21,8 @@ class Link extends Component {
 }
 
 export default connect()(Link);
+
+export function composeHref(pathname, params) {
+    let search = "?" + Object.keys(params).map(key => key + "=" + encodeURIComponent(params[key])).join("&");
+    return pathname + search;
+}
