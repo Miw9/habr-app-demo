@@ -20,6 +20,7 @@ def create_or_update(card):
     except CardNotFound:
         card = wiring.card_dao.create(card)
     wiring.task_manager.enqueue_parsing_card_markup(card.id)
+    return card
 
 
 def generate_slug(title):
@@ -37,15 +38,18 @@ if __name__ == "__main__":
     title_index = header.index("title")
     keywords_index = header.index("keywords")
     overview_index = header.index("overview")
+    vote_average_index = header.index("vote_average")
 
     for row in reader:
         title = row[title_index]
         keywords = [keyword["name"] for keyword in json.loads(row[keywords_index])]
         overview = row[overview_index]
         slug = generate_slug(title)
-        create_or_update(Card(
+        card = create_or_update(Card(
             slug=slug,
             name=title,
             markdown=overview,
             tags=keywords,
         ))
+        vote_average = float(row[vote_average_index])
+        wiring.card_features_dao.create_or_update(card.id, {"rating": vote_average})
